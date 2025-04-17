@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Top Matching Resumes</title>
+</head>
+<body>
+    <h2>Top 10 Matching Resumes</h2>
+    {% for match in matches %}
+        <div style="margin-bottom: 20px;">
+            <strong>{{ match.rank }}. Resume ID:</strong> {{ match.resume_id }}<br>
+            <strong>Match Score:</strong> {{ match.score }}<br>
+            <p>{{ match.text }}</p>
+            <hr>
+        </div>
+    {% endfor %}
+    <a href="/">🔙 Go Back</a>
+</body>
+</html>
