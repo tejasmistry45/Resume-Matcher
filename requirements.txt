@@ -3,3 +3,10 @@ pandas
 numpy
 faiss-cpu
 sentence-transformers
+langchain 
+# langchain-community
+langchain-together
+together 
+openai
+dotenv
+json

@@ -1,57 +1,94 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Resume Matcher</title>
-    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.0.3/dist/tailwind.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
-</head>
-<body class="bg-gray-50">
-
-<!-- Main container -->
-<div class="flex">
-
-    <!-- Left Section (Job Description) -->
-    <div class="w-1/2 p-6 bg-white shadow-lg rounded-lg">
+    <link
+      href="https://cdn.jsdelivr.net/npm/tailwindcss@2.0.3/dist/tailwind.min.css"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='css/style.css') }}"
+    />
+  </head>
+  <body class="bg-gray-50">
+    <!-- Main container -->
+    <div class="flex">
+      <!-- Left Section (Job Description) -->
+      <div class="w-1/2 p-6 bg-white shadow-lg rounded-lg">
         <h2 class="text-2xl font-bold mb-4">Job Description</h2>
         <form method="POST" action="/">
-            <textarea name="job_description" placeholder="Paste your job description here..." class="w-full p-4 border rounded-md" rows="10" required>{{ job_description }}</textarea>
-            <button type="submit" class="mt-4 px-6 py-2 bg-blue-500 text-white rounded-md">Find Matches</button>
+          <textarea
+            name="job_description"
+            placeholder="Paste your job description here..."
+            class="w-full p-4 border rounded-md"
+            rows="10"
+            required
+          >
+{{ job_description }}</textarea
+          >
+          <button
+            type="submit"
+            class="mt-4 px-6 py-2 bg-blue-500 text-white rounded-md"
+          >
+            Find Matches
+          </button>
         </form>
-    </div>
+      </div>
 
-    <!-- Right Section (Top Matching Resumes) -->
-    <div class="w-1/2 p-6 bg-white shadow-lg rounded-lg ml-4">
+      <!-- Right Section (Top Matching Resumes) -->
+      <div
+        class="w-1/2 p-6 bg-white shadow-lg rounded-lg ml-4 overflow-x-hidden"
+      >
         <h2 class="text-2xl font-bold mb-4">Top 5 Matching Resumes</h2>
 
         {% if matches %}
         <div class="space-y-4">
-            {% for match in matches %}
-            <div class="resume-card border p-4 rounded-md shadow-md">
-                <h3 class="text-xl font-semibold">{{ match.resume_id }}</h3>
-                <p class="text-gray-600">{{ match.text }}</p>
-                <p class="text-blue-600">Match Score: {{ match.score }}</p>
-                <button class="mt-2 px-4 py-2 bg-green-500 text-white rounded-md view-button" data-id="{{ match.resume_id }}">View</button>
+          {% for match in matches %}
+          <div class="resume-card">
+            <h3>Resume {{ match.rank }}</h3>
+            <p><strong>Match Score:</strong> {{ match.score }}</p>
+            <div class="bg-gray-100 p-4 rounded-md shadow-sm space-y-2">
+              {% for line in match.llm_info.split('\n') %} {% if line.strip() %}
+              <p class="text-gray-800">
+                <strong>{{ line.split(':')[0] }}:</strong>{{ line.split(':',
+                1)[1] if ':' in line else '' }}
+              </p>
+              {% endif %} {% endfor %}
             </div>
-            {% endfor %}
+
+            <!-- 💡 Display raw LLM output for now -->
+          </div>
+          {% endfor %}
         </div>
         {% else %}
-        <p class="text-gray-500">No matches found yet. Please enter a job description and click 'Find Matches'.</p>
+        <p class="text-gray-500">
+          No matches found yet. Please enter a job description and click 'Find
+          Matches'.
+        </p>
         {% endif %}
+      </div>
     </div>
 
-</div>
-
-<!-- Modal for Resume Details -->
-<div id="resume-modal" class="modal fixed inset-0 bg-black bg-opacity-50 hidden flex justify-center items-center">
-    <div class="modal-content bg-white p-6 rounded-lg w-1/2">
+    <!-- Modal for Resume Details -->
+    <div
+      id="resume-modal"
+      class="modal fixed inset-0 bg-black bg-opacity-50 hidden flex justify-center items-center"
+    >
+      <div class="modal-content bg-white p-6 rounded-lg w-1/2">
         <h3 class="text-xl font-semibold">Resume Details</h3>
         <div id="resume-details"></div>
-        <button id="close-modal" class="mt-4 px-4 py-2 bg-red-500 text-white rounded-md">Close</button>
+        <button
+          id="close-modal"
+          class="mt-4 px-4 py-2 bg-red-500 text-white rounded-md"
+        >
+          Close
+        </button>
+      </div>
     </div>
-</div>
 
-<script src="{{ url_for('static', filename='js/modal.js') }}"></script>
-</body>
+    <script src="{{ url_for('static', filename='js/modal.js') }}"></script>
+  </body>
 </html>

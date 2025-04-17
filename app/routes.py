@@ -4,6 +4,7 @@ import pandas as pd
 import numpy as np
 import faiss
 from sentence_transformers import SentenceTransformer
+from llm_utils import extract_resume_info
 
 bp = Blueprint('main', __name__, template_folder='templates', static_folder='static')
 
@@ -29,14 +30,17 @@ def home():
 
 
         for i, idx in enumerate(indices[0]):
+            resume_text = resume_texts[idx]
+            llm_response = extract_resume_info(resume_text)
             matches.append({
                 'rank': i + 1,
                 'resume_id': resume_ids[idx],
-                'text': resume_texts[idx][:500] + "...",
-                'score': round(1 - distances[0][i], 4)
+                'score': round(1 - distances[0][i], 4),
+                'llm_info' : llm_response
+                # 'text': resume_texts[idx][:500] + "...",
+                
             })
         end_time= time.time()
         print(f"Search completed in {end_time - start_time:.2f} seconds.")
-        # return render_template('results.html', matches=matches)
 
     return render_template('index.html',matches=matches, job_description=job_description)

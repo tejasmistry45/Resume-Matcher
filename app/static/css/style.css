@@ -30,3 +30,32 @@
 .hidden {
     display: none;
 }
+
+.result-box {
+    border: 1px solid #ccc;
+    padding: 16px;
+    margin-bottom: 16px;
+    background-color: #f9f9f9;
+    overflow-wrap: break-word;
+    word-wrap: break-word;
+    word-break: break-word;
+    white-space: normal;
+    max-width: 100%;
+    box-sizing: border-box;
+  }
+  
+  .result-label {
+    font-weight: bold;
+    margin-top: 8px;
+  }
+  
+  .result-value {
+    margin-bottom: 8px;
+  }
+  
+  #right-pane {
+    overflow-y: auto;
+    overflow-x: hidden;  /* Disable horizontal scrolling */
+    width: 100%;
+  }
+  
