@@ -5,7 +5,7 @@ import numpy as np
 import faiss
 from sentence_transformers import SentenceTransformer
 
-bp = Blueprint('main', __name__)
+bp = Blueprint('main', __name__, template_folder='templates', static_folder='static')
 
 # Load model and data
 model = SentenceTransformer('all-mpnet-base-v2')
@@ -17,13 +17,17 @@ index = faiss.read_index('./embeddings/faiss_index.index')
 
 @bp.route('/', methods=['GET', 'POST'])
 def home():
+
+    matches = []
+    job_description = None 
+
     if request.method == 'POST':
         start_time = time.time()
         job_description = request.form['job_description']
         job_embedding = model.encode([job_description], convert_to_numpy=True)
         distances, indices = index.search(job_embedding, 5)
 
-        matches = []
+
         for i, idx in enumerate(indices[0]):
             matches.append({
                 'rank': i + 1,
@@ -33,6 +37,6 @@ def home():
             })
         end_time= time.time()
         print(f"Search completed in {end_time - start_time:.2f} seconds.")
-        return render_template('results.html', matches=matches)
+        # return render_template('results.html', matches=matches)
 
-    return render_template('index.html')
+    return render_template('index.html',matches=matches, job_description=job_description)
