@@ -42,26 +42,20 @@ def home():
 @bp.route('/insights/<resume_id>', methods=['GET'])
 def get_resume_insights(resume_id):
     try:
-        # print(f"[DEBUG] Received resume_id: {resume_id}")
-
         # Ensure both resume_id and list items are strings
         resume_id_str = str(resume_id)
         resume_ids_str = [str(rid) for rid in resume_ids]
 
         if resume_id_str not in resume_ids_str:
-            # print(f"[ERROR] Resume ID not found: {resume_id_str}")
             return "Resume ID not found.", 404
 
         resume_index = resume_ids_str.index(resume_id_str)
         resume_text = resume_texts[resume_index]
-        # print(f"[DEBUG] Resume text: {resume_text[:100]}...")  # Log only first 100 chars
 
         llm_response = extract_resume_info(resume_text)
-        # print(f"[DEBUG] LLM response: {llm_response[:100]}...")  # Avoid printing large response
 
         return llm_response.strip(), 200, {'Content-Type': 'text/plain'}
 
     except Exception as e:
         import traceback
-        # print(f"[ERROR] Unexpected failure:\n{traceback.format_exc()}")
         return f"Failed to extract insights: {str(e)}", 500
