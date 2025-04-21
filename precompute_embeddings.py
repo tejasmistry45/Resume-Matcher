@@ -1,3 +1,5 @@
+# this script precomputes the embeddings for resumes and saves them to a FAISS index.
+
 import pandas as pd
 import numpy as np
 from sentence_transformers import SentenceTransformer

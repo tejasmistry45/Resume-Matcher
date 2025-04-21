@@ -47,7 +47,7 @@ prompt = PromptTemplate(
 
 def extract_resume_info(resume_text):
     # Format the resume text to fit in the prompt
-    final_prompt = prompt.format(resume_text=resume_text[:1500])
+    final_prompt = prompt.format(resume_text=resume_text[:700])
     
     # Get the response from the LLM
     raw_response = llm.invoke(final_prompt)

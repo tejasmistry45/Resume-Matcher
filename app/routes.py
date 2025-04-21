@@ -20,7 +20,7 @@ index = faiss.read_index('./embeddings/faiss_index.index')
 def home():
 
     matches = []
-    job_description = None 
+    job_description = ""
 
     if request.method == 'POST':
         start_time = time.time()
@@ -34,8 +34,8 @@ def home():
             llm_response = extract_resume_info(resume_text)
             matches.append({
                 'rank': i + 1,
-                'resume_id': resume_ids[idx],
-                'score': round(1 - distances[0][i], 4),
+                'resume_id': resume_ids[idx],  
+                'score': round(1 - distances[0][i], 4), # similarity score, adjusted so that higher is better:
                 'llm_info' : llm_response
                 # 'text': resume_texts[idx][:500] + "...",
                 

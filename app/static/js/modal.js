@@ -1,5 +1,3 @@
-// modal.js
-
 // Show modal with resume details when "View" button is clicked
 document.querySelectorAll('.view-button').forEach(button => {
     button.addEventListener('click', function() {
