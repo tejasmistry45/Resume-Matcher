@@ -9,7 +9,6 @@ load_dotenv()
 # Initialize the Together AI LLM
 llm = Together(
     model="mistralai/Mistral-7B-Instruct-v0.1",
-    # model="deepseek-ai/DeepSeek-R1",
     # model="meta-llama/Llama-2-70b-hf",
     # model="meta-llama/Llama-4-Maverick-17B-128E-Instruct-FP8",
     # model= "mistralai/Mistral-7B-Instruct-v0.1",
@@ -45,32 +44,39 @@ prompt = PromptTemplate(
     template=template,
 )
 
+# Adjusting the response parsing
 def extract_resume_info(resume_text):
     # Format the resume text to fit in the prompt
-    final_prompt = prompt.format(resume_text=resume_text[:700])
+    final_prompt = prompt.format(resume_text=resume_text[:700])  # limit the input size
     
     # Get the response from the LLM
     raw_response = llm.invoke(final_prompt)
     
     # Try to parse the raw response into a structured format
     try:
-        # If the response is in JSON format, try to parse it
-        response = json.loads(raw_response)
+        response = json.loads(raw_response)  # if response is valid JSON
+        name = response.get("Name", "Not Available")
+        years = response.get("Years of Experience", "Not Available")
+        skills = response.get("Key Skills", "Not Available")
+        tech = response.get("Technologies / Tools", "Not Available")
+        level = response.get("Estimated Experience Level", "Not Available")
     except json.JSONDecodeError:
-        # If the response is not JSON, handle it as a raw string
-        response = raw_response
+        # Fallback for plain text
+        response_lines = raw_response.strip().split("\n")
+        data = {}
+        for line in response_lines:
+            if ":" in line:
+                key, value = line.split(":", 1)
+                data[key.strip()] = value.strip()
+        
+        name = data.get("Name", "Not Available")
+        years = data.get("Years of Experience", "Not Available")
+        skills = data.get("Key Skills", "Not Available")
+        tech = data.get("Technologies / Tools", "Not Available")
+        level = data.get("Estimated Experience Level", "Not Available")
 
-    # If response is a string, we parse the response to extract details
-    if isinstance(response, str):
-        formatted_response = response
-    else:
-        # Extract and format response based on structured fields (if JSON)
-        formatted_response = f"""
-        Name: {response.get('Person Name', 'Not Available')},
-        Years of Experience: {response.get('Years of Experience', 'Not Available')},
-        Key Skills: {response.get('Key Skills', 'Not Available')},
-        Technologies / Tools: {response.get('Technologies / Tools', 'Not Available')},
-        Estimated Experience Level: {response.get('Estimated Experience Level', 'Not Available')}
-        """
+    # Return compact HTML with mt-0 on the first <p> to remove top margin
+    formatted_html = f"""<div class="space-y-1">
+<p class="mt-0"><strong>Name:</strong> {name}</p><p><strong>Years of Experience:</strong> {years}</p><p><strong>Key Skills:</strong> {skills}</p><p><strong>Technologies / Tools:</strong> {tech}</p><p><strong>Estimated Experience Level:</strong> {level}</p></div>"""
 
-    return formatted_response
+    return formatted_html

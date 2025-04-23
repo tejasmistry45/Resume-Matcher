@@ -7,6 +7,6 @@ langchain
 # langchain-community
 langchain-together
 together 
-openai
+# openai
 dotenv
-json
+# json
