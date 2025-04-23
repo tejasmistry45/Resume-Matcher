@@ -51,8 +51,11 @@ def get_resume_insights(resume_id):
 
         resume_index = resume_ids_str.index(resume_id_str)
         resume_text = resume_texts[resume_index]
-
+        
+        start_time = time.time()
         llm_response = extract_resume_info(resume_text)
+        end_time = time.time()
+        print(f"LLM Response completed in {end_time - start_time:.2f} seconds.")
 
         return llm_response.strip(), 200, {'Content-Type': 'text/plain'}
 
