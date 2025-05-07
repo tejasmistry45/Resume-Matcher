@@ -1,91 +1,98 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Resume Matcher</title>
-    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.0.3/dist/tailwind.min.css" rel="stylesheet" />
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}" />
-  </head>
 
-  <body class="bg-gray-50">
-    <div class="flex flex-col md:flex-row">
-      <!-- Left Section -->
-      <div class="w-full md:w-1/2 p-6 bg-white shadow-lg rounded-lg">
-        <h2 class="text-2xl font-bold mb-4">Job Description</h2>
-        <form method="POST" action="/">
-          <textarea name="job_description" placeholder="Paste your job description here..." class="w-full p-4 border rounded-md" rows="10" required>{{ job_description }}</textarea>
-          <button type="submit" class="mt-4 px-6 py-2 bg-blue-500 text-white rounded-md">Find Matches</button>
-        </form>
-      </div>
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Resume Matcher</title>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.0.3/dist/tailwind.min.css" rel="stylesheet" />
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}" />
+  <script src="{{ url_for('static', filename='js/modal.js') }}"></script>
+</head>
 
-      <!-- Right Section -->
-      <div class="w-full md:w-1/2 p-6 bg-white shadow-lg rounded-lg md:ml-4 mt-4 md:mt-0 overflow-x-hidden">
-        <h2 class="text-2xl font-bold mb-4">Top 5 Matching Resumes</h2>
-
-        {% if matches %}
+<body class="bg-gray-50">
+  <div class="flex flex-col md:flex-row">
+    <!-- Left Section -->
+    <div class="w-full md:w-1/2 p-6 bg-white shadow-lg rounded-lg">
+      <h2 class="text-2xl font-bold mb-4">Job Description</h2>
+      <form method="POST" action="/">
+        <!-- Structured JD Fields -->
         <div class="space-y-4">
-          {% for match in matches %}
-          <div class="resume-card border rounded-md p-4 shadow-md bg-gray-50">
-            <h2 class="text-xl font-semibold mb-1">
-              {{ match.name if match.name else "Resume " ~ match.resume_id }}
-            </h2>
-            <p class="mb-2"><strong>Match Score:</strong> {{ match.score }}</p>
-
-            <button
-              type="button"
-              class="insights-button text-white bg-blue-600 px-4 py-1 rounded hover:bg-blue-700 focus:outline-none"
-              data-resume-id="{{ match.resume_id }}"
-            >
-              View Key Points
-            </button>
-
-            <div id="insights-{{ match.resume_id }}" class="hidden mt-2 bg-white border border-gray-200 rounded p-4 text-sm text-gray-700 whitespace-pre-wrap">
-              <!-- Insights will load here -->
-            </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700">Job Title</label>
+            <input name="job_title" value="{{ jd_fields.job_title }}" required class="w-full p-2 border rounded-md" />
           </div>
-          {% endfor %}
+
+          <div>
+            <label class="block text-sm font-medium text-gray-700">Location</label>
+            <input name="location" value="{{ jd_fields.location }}" class="w-full p-2 border rounded-md" />
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium text-gray-700">Years of Experience</label>
+            <input name="years_exp" value="{{ jd_fields.years_exp }}" class="w-full p-2 border rounded-md" />
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium text-gray-700">Skills (comma-separated)</label>
+            <input name="skills" value="{{ jd_fields.skills }}" class="w-full p-2 border rounded-md" />
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium text-gray-700">Qualifications</label>
+            <textarea name="qualifications" class="w-full p-2 border rounded-md"
+              rows="3">{{ jd_fields.qualifications }}</textarea>
+          </div>
         </div>
-        {% else %}
-        <p class="text-gray-500">
-          No matches found yet. Please enter a job description and click 'Find Matches'.
-        </p>
-        {% endif %}
-      </div>
+
+        <!-- Optional Clean JD Button (if you still want to clean pasted JD) -->
+        <button type="button" id="cleanJdBtn" class="mt-4 px-6 py-2 bg-blue-500 text-white rounded-md">🧹 Clean
+          JD</button>
+
+        <!-- Structured View (Hidden initially) -->
+        <div id="structuredView" class="mt-3" style="display: none;">
+          <h3>📄 Structured JD</h3>
+          <div id="structuredContent"></div>
+        </div>
+
+        <button type="submit" class="mt-4 px-6 py-2 bg-blue-500 text-white rounded-md">Find Matches</button>
+      </form>
     </div>
 
-    <!-- JavaScript to fetch insights -->
-    <script>
-      document.querySelectorAll(".insights-button").forEach(button => {
-        button.addEventListener("click", async () => {
-          const resumeId = button.getAttribute("data-resume-id");
-          const insightsDiv = document.getElementById(`insights-${resumeId}`);
+    <!-- Right Section for Matching Resumes -->
+    <div class="w-full md:w-1/2 p-6 bg-white shadow-lg rounded-lg md:ml-4 mt-4 md:mt-0 overflow-x-hidden">
+      <h2 class="text-2xl font-bold mb-4">Top 5 Matching Resumes</h2>
 
-          if (!insightsDiv.classList.contains("hidden")) {
-            insightsDiv.classList.add("hidden");
-            return;
-          }
+      <!-- Display Matches if they exist -->
+      {% if matches %}
+      <div class="space-y-4">
+        {% for match in matches %}
+        <div class="resume-card border rounded-md p-4 shadow-md bg-gray-50">
+          <h2 class="text-xl font-semibold mb-1">
+            {{ match.name if match.name else "Resume " ~ match.resume_id }}
+          </h2>
+          <p class="mb-2"><strong>Match Score:</strong> {{ match.score }}</p>
 
-          insightsDiv.classList.remove("hidden");
-          insightsDiv.innerHTML = "Loading...";
+          <button type="button"
+            class="insights-button text-white bg-blue-600 px-4 py-1 rounded hover:bg-blue-700 focus:outline-none"
+            data-resume-id="{{ match.resume_id }}">
+            View Key Points
+          </button>
 
-          try {
-            const response = await fetch(`/insights/${resumeId}`);
-            const data = await response.text();
+          <div id="insights-{{ match.resume_id }}"
+            class="hidden mt-2 bg-white border border-gray-200 rounded p-4 text-sm text-gray-700 whitespace-pre-wrap">
+            <!-- Insights will load here -->
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+      {% else %}
+      <p class="text-gray-500">
+        No matches found yet. Please enter a job description and click 'Find Matches' to get results.
+      </p>
+      {% endif %}
+    </div>
+  </div>
+</body>
 
-            if (response.ok) {
-              insightsDiv.innerHTML = data;
-            } else {
-              insightsDiv.innerHTML = "Error loading insights.";
-            }
-          } catch (error) {
-            console.error("Fetch error:", error);
-            insightsDiv.innerHTML = "Error loading insights.";
-          }
-        });
-      });
-    </script>
-
-    <script src="{{ url_for('static', filename='js/modal.js') }}"></script>
-  </body>
 </html>

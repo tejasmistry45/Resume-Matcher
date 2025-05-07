@@ -4,7 +4,9 @@
     <title>Top Matching Resumes</title>
 </head>
 <body>
-    <h2>Top 10 Matching Resumes</h2>
+    <h2 class="text-2xl font-bold mb-4">Top 10 Matching Resumes</h2>
+    
+    <!-- Displaying Matches -->
     {% for match in matches %}
         <div style="margin-bottom: 20px;">
             <strong>{{ match.rank }}. Resume ID:</strong> {{ match.resume_id }}<br>
@@ -13,6 +15,8 @@
             <hr>
         </div>
     {% endfor %}
-    <a href="/">🔙 Go Back</a>
+    
+    <!-- Go Back Link -->
+    <a href="/" class="text-blue-500">🔙 Go Back</a>
 </body>
 </html>

@@ -3,6 +3,8 @@ from langchain_together import Together
 from langchain.prompts import PromptTemplate
 from dotenv import load_dotenv
 import json
+import ollama
+
 
 load_dotenv()
 
@@ -12,7 +14,7 @@ llm = Together(
     # model="meta-llama/Llama-2-70b-hf",
     # model="meta-llama/Llama-4-Maverick-17B-128E-Instruct-FP8",
     # model= "mistralai/Mistral-7B-Instruct-v0.1",
-    temperature=0.7,
+    temperature=0,
     max_tokens=512,
     together_api_key=os.getenv("TOGETHER_API_KEY"),
 )
@@ -80,3 +82,62 @@ def extract_resume_info(resume_text):
 <p class="mt-0"><strong>Name:</strong> {name}</p><p><strong>Years of Experience:</strong> {years}</p><p><strong>Key Skills:</strong> {skills}</p><p><strong>Technologies / Tools:</strong> {tech}</p><p><strong>Estimated Experience Level:</strong> {level}</p></div>"""
 
     return formatted_html
+
+
+def extract_jd_info(job_description):
+    prompt = f"""
+        You are an intelligent AI assistant. Extract the following fields from the provided Job Description text.
+        Respond ONLY in the EXACT format given below. No extra text, explanations, or bullet points.
+
+        Format:
+        Job Title: ...
+        Location: ...
+        Years of Experience: ...
+        Estimated Experience Level: ...
+        Skills: ...
+        Required Qualifications: ...
+
+        Job Description:
+        \"\"\"
+        {job_description}
+        \"\"\"
+    """
+
+    response = ollama.chat(
+        model="llama2",
+        messages=[{"role": "user", "content": prompt}]
+    )
+
+    content = response.get('message', {}).get('content', '').strip()
+
+    # Now, let's parse the content and split it by the fields
+    cleaned_sections = {}
+
+    # Split content by lines and match to sections
+    lines = content.split('\n')
+    
+    # Ensure you handle each expected field
+    if len(lines) >= 5:
+        cleaned_sections["Job Title"] = lines[0].strip()
+        cleaned_sections["Location"] = lines[1].strip()
+        cleaned_sections["Years of Experience"] = lines[2].strip()
+        cleaned_sections["Estimated Experience Level"] = lines[3].strip()
+        cleaned_sections["Skills"] = lines[4].strip()
+        
+        # Optionally, join all remaining lines as required qualifications if any
+        cleaned_sections["Required Qualifications"] = "\n".join(lines[5:]).strip()
+
+    return cleaned_sections
+
+
+
+
+# check if the model is running locally
+# import ollama
+
+# # Test if you can communicate with the local Ollama model
+# response = ollama.chat(
+#     model="llama2",  # Replace with the correct model name if different
+#     messages=[{"role": "user", "content": "Hello, how are you?"}]
+# )
+# print(response)
